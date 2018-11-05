@@ -1,8 +1,6 @@
 package ru.tony.transfer.resource;
 
-import ru.tony.transfer.resource.messages.AccountListResponse;
-import ru.tony.transfer.resource.messages.AccountRequest;
-import ru.tony.transfer.resource.messages.AccountResponse;
+import ru.tony.transfer.resource.messages.*;
 import ru.tony.transfer.service.AccountService;
 
 import javax.inject.Inject;
@@ -37,5 +35,13 @@ public class AccountResource {
     @Produces(APPLICATION_JSON)
     public AccountListResponse getAll() {
         return new AccountListResponse(service.findAll());
+    }
+
+    @POST
+    @Path("/transfer")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public TransferResponse transfer(@Valid TransferRequest request) {
+        return new TransferResponse(service.transfer(request));
     }
 }

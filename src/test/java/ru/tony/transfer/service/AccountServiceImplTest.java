@@ -4,14 +4,20 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import ru.tony.transfer.db.ConnectionManager;
 import ru.tony.transfer.model.Account;
+import ru.tony.transfer.model.AccountTransaction;
 import ru.tony.transfer.repository.AccountRepository;
-import ru.tony.transfer.resource.messages.AccountItem;
-import ru.tony.transfer.resource.messages.AccountRequest;
-import ru.tony.transfer.resource.messages.AccountResponse;
+import ru.tony.transfer.repository.AccountTransactionRepository;
+import ru.tony.transfer.resource.messages.*;
+import ru.tony.transfer.service.exception.AccountFromNotFoundException;
 import ru.tony.transfer.service.exception.AccountNotFoundException;
+import ru.tony.transfer.service.exception.AccountToNotFoundException;
+import ru.tony.transfer.service.exception.InsufficientFundsException;
 import ru.tony.transfer.service.impl.AccountServiceImpl;
 
 import javax.sql.DataSource;
@@ -26,8 +32,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 public class AccountServiceImplTest {
 
@@ -38,13 +44,21 @@ public class AccountServiceImplTest {
     private AccountService sut;
 
     private AccountRepository accRepo;
+    private AccountTransactionRepository transactionRepo;
+
+    @Captor
+    private ArgumentCaptor<Account> accountCaptor;
+    @Captor
+    private ArgumentCaptor<AccountTransaction> transactionCaptor;
 
     @Before
     public void beforeTest() throws SQLException {
+        initMocks(this);
         accRepo = mock(AccountRepository.class);
         DataSource dataSource = mock(DataSource.class);
         when(dataSource.getConnection()).thenReturn(mock(Connection.class));
-        sut = new AccountServiceImpl(accRepo, new ConnectionManager(dataSource));
+        transactionRepo = mock(AccountTransactionRepository.class);
+        sut = new AccountServiceImpl(accRepo, new ConnectionManager(dataSource), transactionRepo);
     }
 
     @Test
@@ -100,6 +114,64 @@ public class AccountServiceImplTest {
         List<AccountItem> items = sut.findAll();
 
         assertEquals(2, items.size());
+    }
+
+    @Test
+    public void shouldFailWhenAccountFromNotExist() {
+        thrown.expect(AccountFromNotFoundException.class);
+        sut.transfer(TransferRequest.builder().from("from").build());
+    }
+
+    @Test
+    public void shouldFailWhenAccountToNotExist() {
+        thrown.expect(AccountToNotFoundException.class);
+        when(accRepo.findByNumberForUpdate(any(Connection.class), eq("from"))).thenReturn(new Account());
+        sut.transfer(TransferRequest.builder().from("from").build());
+    }
+
+    @Test
+    public void shouldFailWhenNotEnoughFunds() {
+        thrown.expect(InsufficientFundsException.class);
+        when(accRepo.findByNumberForUpdate(any(Connection.class), eq("from"))).thenReturn(Account.builder().balance(BigDecimal.TEN).build());
+        when(accRepo.findByNumberForUpdate(any(Connection.class), eq("to"))).thenReturn(Account.builder().build());
+        sut.transfer(TransferRequest.builder().from("from").to("to").amount(BigDecimal.valueOf(11)).build());
+    }
+
+    @Test
+    public void shouldAddAndSubtractAndCreateTransactionRecord(){
+        Long idFrom = 1L;
+        Long idTo = 2L;
+        Long trId = 333L;
+        when(accRepo.findByNumberForUpdate(any(Connection.class), eq("from"))).thenReturn(Account.builder().id(idFrom).balance(BigDecimal.TEN).build());
+        when(accRepo.findByNumberForUpdate(any(Connection.class), eq("to"))).thenReturn(Account.builder().id(idTo).balance(BigDecimal.ONE).build());
+        when(transactionRepo.create(any(Connection.class), any(AccountTransaction.class))).thenAnswer(getAccountTransactionAnswer(trId));
+        TransferItem item = sut.transfer(TransferRequest.builder().from("from").to("to").amount(BigDecimal.valueOf(5)).build());
+
+        assertEquals(trId, item.getTransactionId());
+        assertNotNull(item.getTransactionTime());
+
+        verify(transactionRepo).create(any(Connection.class), transactionCaptor.capture());
+        AccountTransaction transaction = transactionCaptor.getValue();
+        assertEquals(idFrom, transaction.getFrom());
+        assertEquals(idTo, transaction.getTo());
+        assertNotNull(transaction.getTransactionTime());
+        assertEquals(BigDecimal.valueOf(5), transaction.getAmount());
+
+        verify(accRepo, times(2)).updateBalance(any(Connection.class), accountCaptor.capture());
+        Account accountFrom = accountCaptor.getAllValues().get(0);
+        assertEquals(idFrom, accountFrom.getId());
+        assertEquals(BigDecimal.valueOf(5), accountFrom.getBalance());
+        Account accountTo = accountCaptor.getAllValues().get(1);
+        assertEquals(idTo, accountTo.getId());
+        assertEquals(BigDecimal.valueOf(6), accountTo.getBalance());
+    }
+
+    private Answer<AccountTransaction> getAccountTransactionAnswer(Long trId) {
+        return invocationOnMock -> {
+            AccountTransaction tr = invocationOnMock.getArgument(1);
+            tr.setId(trId);
+            return tr;
+        };
     }
 
     private static Account answerAccount(InvocationOnMock invocation) {

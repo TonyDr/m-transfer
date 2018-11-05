@@ -13,4 +13,8 @@ public interface AccountRepository {
     Account findById(Connection connection, Long id) throws SQLException;
 
     List<Account> findAll(Connection conn) throws SQLException;
+
+    Account findByNumberForUpdate(Connection conn, String from);
+
+    void updateBalance(Connection conn, Account account);
 }

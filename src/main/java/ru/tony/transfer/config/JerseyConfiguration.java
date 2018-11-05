@@ -5,6 +5,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import ru.tony.transfer.db.ConnectionManager;
 import ru.tony.transfer.db.DbConnection;
 import ru.tony.transfer.repository.impl.AccountRepositoryImpl;
+import ru.tony.transfer.repository.impl.AccountTransactionRepositoryImpl;
 import ru.tony.transfer.service.AccountService;
 import ru.tony.transfer.service.impl.AccountServiceImpl;
 
@@ -25,6 +26,6 @@ public class JerseyConfiguration extends ResourceConfig {
 
     private void initServices() {
         accountService = new AccountServiceImpl(new AccountRepositoryImpl(),
-                new ConnectionManager(DbConnection.getDataSource()));
+                new ConnectionManager(DbConnection.getDataSource()), new AccountTransactionRepositoryImpl());
     }
 }

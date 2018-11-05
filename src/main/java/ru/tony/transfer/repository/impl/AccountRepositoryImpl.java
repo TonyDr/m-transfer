@@ -62,4 +62,14 @@ public class AccountRepositoryImpl implements AccountRepository {
         }
         return list;
     }
+
+    @Override
+    public Account findByNumberForUpdate(Connection conn, String from) {
+        return null;
+    }
+
+    @Override
+    public void updateBalance(Connection conn, Account account) {
+
+    }
 }

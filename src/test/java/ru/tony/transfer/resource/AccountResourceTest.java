@@ -14,12 +14,12 @@ import ru.tony.transfer.service.AccountService;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -68,8 +68,8 @@ public class AccountResourceTest extends JerseyTest {
 
         when(service.save(request)).thenReturn(new AccountResponse());
         AccountResponse resp = target(ACCOUNTS)
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .buildPost(Entity.entity(request, MediaType.APPLICATION_JSON_TYPE))
+                .request(APPLICATION_JSON_TYPE)
+                .buildPost(Entity.entity(request, APPLICATION_JSON_TYPE))
                 .invoke().readEntity(AccountResponse.class);
 
         verify(service, times(1)).save(request);
@@ -110,6 +110,51 @@ public class AccountResourceTest extends JerseyTest {
         assertEquals(2, resp.getAccounts().size());
     }
 
+    @Test
+    public void shouldFailWithBadRequestWhenFromIsEmpty() {
+        Response response = callTransfer(fullFilledTransferRequest().from(null).build());
+        assertEquals(BAD_REQUEST.getStatusCode(), response.getStatus());
+        response = callTransfer(fullFilledTransferRequest().from("").build());
+        assertEquals(BAD_REQUEST.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void shouldFailWithBadRequestWhenToIsEmpty() {
+        Response response = callTransfer(fullFilledTransferRequest().to(null).build());
+        assertEquals(BAD_REQUEST.getStatusCode(), response.getStatus());
+        response = callTransfer(fullFilledTransferRequest().to("").build());
+        assertEquals(BAD_REQUEST.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void shouldFailWithBadRequestWhenAmountIsIncorrect() {
+        Response response =callTransfer(fullFilledTransferRequest().amount(null).build());
+        assertEquals(BAD_REQUEST.getStatusCode(), response.getStatus());
+        response = callTransfer(fullFilledTransferRequest().amount(BigDecimal.valueOf(-1)).build());
+        assertEquals(BAD_REQUEST.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void shouldCorrectlyCallTransferMethod() {
+        Long id = 123L;
+        TransferRequest request = fullFilledTransferRequest().build();
+        when(service.transfer(eq(request))).thenReturn(TransferItem.builder().transactionId(id).build());
+        TransferResponse resp = callTransfer(request).readEntity(TransferResponse.class);
+        assertEquals(ResponseStatus.OK, resp.getStatus());
+        assertEquals(id, resp.getInfo().getTransactionId());
+    }
+
+    private Response callTransfer(TransferRequest request) {
+        Response response;
+        response = target(ACCOUNTS).path("transfer").request(APPLICATION_JSON_TYPE)
+                .buildPost(Entity.entity(request, APPLICATION_JSON_TYPE)).invoke();
+        return response;
+    }
+
+    private TransferRequest.TransferRequestBuilder fullFilledTransferRequest() {
+        return TransferRequest.builder().from("from").to("to").amount(BigDecimal.TEN);
+    }
+
     private AccountRequest.AccountRequestBuilder getAccountRequestBuilderFullFilled() {
         return AccountRequest.builder()
                 .name("test")
@@ -118,8 +163,8 @@ public class AccountResourceTest extends JerseyTest {
 
     private void assertAccountPostBadRequest(AccountRequest request) {
         Response resp = target(ACCOUNTS)
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .buildPost(Entity.entity(request, MediaType.APPLICATION_JSON_TYPE))
+                .request(APPLICATION_JSON_TYPE)
+                .buildPost(Entity.entity(request, APPLICATION_JSON_TYPE))
                 .invoke();
         assertEquals(BAD_REQUEST.getStatusCode(), resp.getStatus());
     }
