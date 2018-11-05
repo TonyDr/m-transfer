@@ -18,7 +18,9 @@ import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -90,6 +92,14 @@ public class AccountServiceImplTest {
         assertEquals(createDate, item.getCreateDate());
         assertEquals(testName, item.getName());
         assertEquals(balance, item.getBalance());
+    }
+
+    @Test
+    public void getAllShouldReturnValuesList() throws SQLException {
+        when(accRepo.findAll(any(Connection.class))).thenReturn(Arrays.asList(Account.builder().build(), Account.builder().build()));
+        List<AccountItem> items = sut.findAll();
+
+        assertEquals(2, items.size());
     }
 
     private static Account answerAccount(InvocationOnMock invocation) {

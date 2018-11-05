@@ -11,6 +11,9 @@ import ru.tony.transfer.service.exception.AccountNotFoundException;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
+
+import static java.util.stream.Collectors.toList;
 
 public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
@@ -44,22 +47,26 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<AccountItem> findAll() {
-        return null;
+        return cm.doWork(accountRepository::findAll)
+                .stream()
+                .map(this::toAccountItem).collect(toList());
+    }
+
+    private AccountItem toAccountItem(Account account) {
+        return AccountItem.builder()
+                .id(account.getId())
+                .number(account.getNumber())
+                .createDate(account.getCreateDate())
+                .name(account.getName())
+                .balance(account.getBalance()).build();
     }
 
     private AccountResponse createAccountResponse(Account result) {
-        return AccountResponse.builder().account(
-                AccountItem.builder()
-                .id(result.getId())
-                .number(result.getNumber())
-                .createDate(result.getCreateDate())
-                .name(result.getName())
-                .balance(result.getBalance()).build())
-                .build();
+        return AccountResponse.builder().account(toAccountItem(result)).build();
     }
 
     private String generateNumber() {
         // TODO:
-        return "";
+        return UUID.randomUUID().toString();
     }
 }

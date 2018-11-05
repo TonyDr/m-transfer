@@ -1,10 +1,7 @@
 package ru.tony.transfer.it;
 
 import org.junit.Test;
-import ru.tony.transfer.resource.messages.AccountItem;
-import ru.tony.transfer.resource.messages.AccountRequest;
-import ru.tony.transfer.resource.messages.AccountResponse;
-import ru.tony.transfer.resource.messages.ResponseStatus;
+import ru.tony.transfer.resource.messages.*;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
@@ -28,6 +25,17 @@ public class AccountTransferIT extends AppBase{
                 .buildGet().invoke().readEntity(AccountResponse.class);
 
         assertAccountResponse(name, balance, result);
+    }
+
+    @Test
+    public void shouldCorrectlyGetAccountList() {
+        int size = getListResponse().getAccounts().size();
+        createAccount(getCreateAccountRequest("list_test", BigDecimal.TEN));
+        assertEquals(size +1, getListResponse().getAccounts().size());
+    }
+
+    private AccountListResponse getListResponse() {
+        return target(ACCOUNTS).request().buildGet().invoke().readEntity(AccountListResponse.class);
     }
 
     private void assertAccountResponse(String name, BigDecimal balance, AccountResponse result) {

@@ -9,6 +9,7 @@ import ru.tony.transfer.repository.impl.AccountRepositoryImpl;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -48,6 +49,21 @@ public class AccountRepositoryImplTest {
         assertEquals(createDate, result.getCreateDate());
         assertEquals(testName, result.getName());
         assertEquals(balance, result.getBalance());
+    }
+
+    @Test
+    public void shouldCorrectlyGetAllAccounts() {
+        int size = getAll().size();
+
+        createAccount(Account.builder().name("insertNew").number("some_number").createDate(new Date())
+                .balance(BigDecimal.TEN)
+                .build());
+
+        assertEquals(size + 1, getAll().size());
+    }
+
+    private List<Account> getAll() {
+        return cm.doWork(sut::findAll);
     }
 
     private Account findAccountById(Long id) {

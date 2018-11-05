@@ -62,20 +62,6 @@ public class AccountResourceTest extends JerseyTest {
         assertAccountPostBadRequest(request);
     }
 
-    private AccountRequest.AccountRequestBuilder getAccountRequestBuilderFullFilled() {
-        return AccountRequest.builder()
-                .name("test")
-                .balance(BigDecimal.valueOf(100));
-    }
-
-    private void assertAccountPostBadRequest(AccountRequest request) {
-        Response resp = target(ACCOUNTS)
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .buildPost(Entity.entity(request, MediaType.APPLICATION_JSON_TYPE))
-                .invoke();
-        assertEquals(BAD_REQUEST.getStatusCode(), resp.getStatus());
-    }
-
     @Test
     public void shouldCorrectlyCallSaveServiceMethod() {
         AccountRequest request = getAccountRequestBuilderFullFilled().build();
@@ -122,5 +108,19 @@ public class AccountResourceTest extends JerseyTest {
 
         assertEquals(ResponseStatus.OK, resp.getStatus());
         assertEquals(2, resp.getAccounts().size());
+    }
+
+    private AccountRequest.AccountRequestBuilder getAccountRequestBuilderFullFilled() {
+        return AccountRequest.builder()
+                .name("test")
+                .balance(BigDecimal.valueOf(100));
+    }
+
+    private void assertAccountPostBadRequest(AccountRequest request) {
+        Response resp = target(ACCOUNTS)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .buildPost(Entity.entity(request, MediaType.APPLICATION_JSON_TYPE))
+                .invoke();
+        assertEquals(BAD_REQUEST.getStatusCode(), resp.getStatus());
     }
 }
