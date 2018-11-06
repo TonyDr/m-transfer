@@ -25,7 +25,8 @@ public class JerseyConfiguration extends ResourceConfig {
     }
 
     private void initServices() {
-        accountService = new AccountServiceImpl(new AccountRepositoryImpl(),
-                new ConnectionManager(DbConnection.getDataSource()), new AccountTransactionRepositoryImpl());
+        ConnectionManager cm = new ConnectionManager(DbConnection.getDataSource());
+        accountService = new AccountServiceImpl(new AccountRepositoryImpl(cm),
+                cm, new AccountTransactionRepositoryImpl(cm));
     }
 }

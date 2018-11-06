@@ -1,5 +1,6 @@
 package ru.tony.transfer.repository.impl;
 
+import ru.tony.transfer.db.ConnectionManager;
 import ru.tony.transfer.model.Account;
 import ru.tony.transfer.repository.AccountRepository;
 
@@ -11,23 +12,33 @@ public class AccountRepositoryImpl implements AccountRepository {
 
     private static final String INSERT_SQL = "INSERT INTO ACCOUNT (number, create_date, balance, ACC_NAME)  VALUES (?,?,?,?)";
     private static final String SELECT_SQL = "SELECT ID, NUMBER, CREATE_DATE, BALANCE, ACC_NAME FROM ACCOUNT";
-    private static final String SELECT_BY_ID = SELECT_SQL +" WHERE ID = ?";
+    private static final String SELECT_BY_ID = SELECT_SQL + " WHERE ID = ?";
+    private static final String FOR_UPDATE = SELECT_SQL + " WHERE NUMBER = ? FOR UPDATE ";
+    private static final String UPDATE_BALANCE = "UPDATE ACCOUNT SET BALANCE = ? WHERE NUMBER = ?";
+    private ConnectionManager cm;
+
+    public AccountRepositoryImpl(ConnectionManager cm) {
+        this.cm = cm;
+    }
 
 
     @Override
-    public Account create(Connection connection, Account account) throws SQLException {
-
-        PreparedStatement stm = connection.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS);
-        stm.setString(1, account.getNumber());
-        stm.setTimestamp(2, new Timestamp(account.getCreateDate().getTime()));
-        stm.setBigDecimal(3, account.getBalance());
-        stm.setString(4, account.getName());
-        stm.execute();
-        ResultSet rs = stm.getGeneratedKeys();
-        if (rs.next()) {
-            account.setId(rs.getLong(1));
+    public Account create(Account account) {
+        try {
+            PreparedStatement stm = cm.getActiveConnection().prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS);
+            stm.setString(1, account.getNumber());
+            stm.setTimestamp(2, new Timestamp(account.getCreateDate().getTime()));
+            stm.setBigDecimal(3, account.getBalance());
+            stm.setString(4, account.getName());
+            stm.execute();
+            ResultSet rs = stm.getGeneratedKeys();
+            if (rs.next()) {
+                account.setId(rs.getLong(1));
+            }
+            return account;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        return account;
     }
 
     @Override
@@ -64,12 +75,35 @@ public class AccountRepositoryImpl implements AccountRepository {
     }
 
     @Override
-    public Account findByNumberForUpdate(Connection conn, String from) {
-        return null;
+    public Account findByNumberForUpdate(String number) {
+        try {
+            Connection conn = cm.getActiveConnection();
+            System.out.println(conn);
+            PreparedStatement stm = conn.prepareStatement(FOR_UPDATE);
+            stm.setString(1, number);
+            stm.execute();
+            ResultSet resultSet = stm.getResultSet();
+            if (resultSet.next()) {
+                return getAccount(resultSet);
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public void updateBalance(Connection conn, Account account) {
-
+    public boolean updateBalance(Account account) {
+        try {
+            Connection conn = cm.getActiveConnection();
+            System.out.println(conn);
+            PreparedStatement stm = conn.prepareStatement(UPDATE_BALANCE);
+            stm.setBigDecimal(1, account.getBalance());
+            stm.setString(2, account.getNumber());
+            return stm.executeUpdate() == 1;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

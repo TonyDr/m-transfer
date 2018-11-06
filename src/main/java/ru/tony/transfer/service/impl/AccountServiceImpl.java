@@ -33,7 +33,7 @@ public class AccountServiceImpl implements AccountService {
                 .number(generateNumber())
                 .balance(request.getBalance())
                 .createDate(new Date()).build();
-        Account result = cm.doWork(conn -> accountRepository.create(conn, account));
+        Account result = cm.doWork2(() -> accountRepository.create(account));
         return createAccountResponse(result);
     }
 
@@ -55,12 +55,12 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public TransferItem transfer(TransferRequest request) {
-        return cm.doInTransaction(conn -> {
-            Account from = accountRepository.findByNumberForUpdate(conn, request.getFrom());
+        return cm.doInTransaction(() -> {
+            Account from = accountRepository.findByNumberForUpdate(request.getFrom());
             if (from == null) {
                 throw new AccountFromNotFoundException();
             }
-            Account to = accountRepository.findByNumberForUpdate(conn, request.getTo());
+            Account to = accountRepository.findByNumberForUpdate(request.getTo());
             if (to == null) {
                 throw new AccountToNotFoundException();
             }
@@ -71,10 +71,10 @@ public class AccountServiceImpl implements AccountService {
             BigDecimal toBalance = to.getBalance().add(request.getAmount());
             from.setBalance(fromBalance);
             to.setBalance(toBalance);
-            accountRepository.updateBalance(conn, from);
-            accountRepository.updateBalance(conn, to);
+            accountRepository.updateBalance(from);
+            accountRepository.updateBalance(to);
 
-            return toTransactionItem(transactionRepository.create(conn,
+            return toTransactionItem(transactionRepository.create(
                     AccountTransaction.builder()
                             .from(from.getId())
                             .to(to.getId())

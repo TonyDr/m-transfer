@@ -38,7 +38,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class AccountServiceImplTest {
 
     @Rule
-    public ExpectedException thrown= ExpectedException.none();
+    public ExpectedException thrown = ExpectedException.none();
 
     private static final Long ACCOUNT_ID = 123L;
     private AccountService sut;
@@ -62,13 +62,13 @@ public class AccountServiceImplTest {
     }
 
     @Test
-    public void shouldCorrectlyCreateAccount() throws SQLException {
-        when(accRepo.create(any(Connection.class), any(Account.class) )).thenAnswer(AccountServiceImplTest::answerAccount);
+    public void shouldCorrectlyCreateAccount() {
+        when(accRepo.create(any(Account.class))).thenAnswer(AccountServiceImplTest::answerAccount);
         String testName = "Test name";
         BigDecimal balance = BigDecimal.valueOf(100);
         AccountRequest r = AccountRequest.builder().name(testName).balance(balance).build();
         AccountResponse resp = sut.save(r);
-        AccountItem item  = resp.getAccount();
+        AccountItem item = resp.getAccount();
         assertEquals(ACCOUNT_ID, item.getId());
         assertNotNull(item.getNumber());
         assertNotNull(item.getCreateDate());
@@ -100,7 +100,7 @@ public class AccountServiceImplTest {
         when(accRepo.findById(any(Connection.class), eq(id))).thenReturn(account);
 
         AccountResponse resp = sut.findById(id);
-        AccountItem item  = resp.getAccount();
+        AccountItem item = resp.getAccount();
         assertEquals(id, item.getId());
         assertEquals(number, item.getNumber());
         assertEquals(createDate, item.getCreateDate());
@@ -125,39 +125,39 @@ public class AccountServiceImplTest {
     @Test
     public void shouldFailWhenAccountToNotExist() {
         thrown.expect(AccountToNotFoundException.class);
-        when(accRepo.findByNumberForUpdate(any(Connection.class), eq("from"))).thenReturn(new Account());
+        when(accRepo.findByNumberForUpdate(eq("from"))).thenReturn(new Account());
         sut.transfer(TransferRequest.builder().from("from").build());
     }
 
     @Test
     public void shouldFailWhenNotEnoughFunds() {
         thrown.expect(InsufficientFundsException.class);
-        when(accRepo.findByNumberForUpdate(any(Connection.class), eq("from"))).thenReturn(Account.builder().balance(BigDecimal.TEN).build());
-        when(accRepo.findByNumberForUpdate(any(Connection.class), eq("to"))).thenReturn(Account.builder().build());
+        when(accRepo.findByNumberForUpdate(eq("from"))).thenReturn(Account.builder().balance(BigDecimal.TEN).build());
+        when(accRepo.findByNumberForUpdate(eq("to"))).thenReturn(Account.builder().build());
         sut.transfer(TransferRequest.builder().from("from").to("to").amount(BigDecimal.valueOf(11)).build());
     }
 
     @Test
-    public void shouldAddAndSubtractAndCreateTransactionRecord(){
+    public void shouldAddAndSubtractAndCreateTransactionRecord() {
         Long idFrom = 1L;
         Long idTo = 2L;
         Long trId = 333L;
-        when(accRepo.findByNumberForUpdate(any(Connection.class), eq("from"))).thenReturn(Account.builder().id(idFrom).balance(BigDecimal.TEN).build());
-        when(accRepo.findByNumberForUpdate(any(Connection.class), eq("to"))).thenReturn(Account.builder().id(idTo).balance(BigDecimal.ONE).build());
-        when(transactionRepo.create(any(Connection.class), any(AccountTransaction.class))).thenAnswer(getAccountTransactionAnswer(trId));
+        when(accRepo.findByNumberForUpdate(eq("from"))).thenReturn(Account.builder().id(idFrom).balance(BigDecimal.TEN).build());
+        when(accRepo.findByNumberForUpdate(eq("to"))).thenReturn(Account.builder().id(idTo).balance(BigDecimal.ONE).build());
+        when(transactionRepo.create(any(AccountTransaction.class))).thenAnswer(getAccountTransactionAnswer(trId));
         TransferItem item = sut.transfer(TransferRequest.builder().from("from").to("to").amount(BigDecimal.valueOf(5)).build());
 
         assertEquals(trId, item.getTransactionId());
         assertNotNull(item.getTransactionTime());
 
-        verify(transactionRepo).create(any(Connection.class), transactionCaptor.capture());
+        verify(transactionRepo).create(transactionCaptor.capture());
         AccountTransaction transaction = transactionCaptor.getValue();
         assertEquals(idFrom, transaction.getFrom());
         assertEquals(idTo, transaction.getTo());
         assertNotNull(transaction.getTransactionTime());
         assertEquals(BigDecimal.valueOf(5), transaction.getAmount());
 
-        verify(accRepo, times(2)).updateBalance(any(Connection.class), accountCaptor.capture());
+        verify(accRepo, times(2)).updateBalance(accountCaptor.capture());
         Account accountFrom = accountCaptor.getAllValues().get(0);
         assertEquals(idFrom, accountFrom.getId());
         assertEquals(BigDecimal.valueOf(5), accountFrom.getBalance());
@@ -168,14 +168,14 @@ public class AccountServiceImplTest {
 
     private Answer<AccountTransaction> getAccountTransactionAnswer(Long trId) {
         return invocationOnMock -> {
-            AccountTransaction tr = invocationOnMock.getArgument(1);
+            AccountTransaction tr = invocationOnMock.getArgument(0);
             tr.setId(trId);
             return tr;
         };
     }
 
     private static Account answerAccount(InvocationOnMock invocation) {
-        Account account = invocation.getArgument(1);
+        Account account = invocation.getArgument(0);
         account.setId(ACCOUNT_ID);
         return account;
     }

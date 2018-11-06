@@ -8,13 +8,13 @@ import java.util.List;
 
 public interface AccountRepository {
 
-    Account create(Connection connection, Account account) throws SQLException;
+    Account create(Account account);
 
     Account findById(Connection connection, Long id) throws SQLException;
 
     List<Account> findAll(Connection conn) throws SQLException;
 
-    Account findByNumberForUpdate(Connection conn, String from);
+    Account findByNumberForUpdate(String from);
 
-    void updateBalance(Connection conn, Account account);
+    boolean updateBalance(Account account);
 }
