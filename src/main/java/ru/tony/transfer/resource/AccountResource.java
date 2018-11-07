@@ -10,6 +10,7 @@ import javax.ws.rs.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static ru.tony.transfer.resource.ResourcesNames.ACCOUNTS;
+import static ru.tony.transfer.resource.ResourcesNames.TRANSFER;
 
 @Path(ACCOUNTS)
 public class AccountResource {
@@ -38,7 +39,7 @@ public class AccountResource {
     }
 
     @POST
-    @Path("/transfer")
+    @Path("/" + TRANSFER)
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     public TransferResponse transfer(@Valid TransferRequest request) {
