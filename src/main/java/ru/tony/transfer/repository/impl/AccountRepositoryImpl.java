@@ -42,15 +42,19 @@ public class AccountRepositoryImpl implements AccountRepository {
     }
 
     @Override
-    public Account findById(Connection connection, Long id) throws SQLException {
-        PreparedStatement stm = connection.prepareStatement(SELECT_BY_ID);
-        stm.setLong(1, id);
-        stm.execute();
-        ResultSet resultSet = stm.getResultSet();
-        if (resultSet.next()) {
-            return getAccount(resultSet);
-        } else {
-            return null;
+    public Account findById(Long id)  {
+        try {
+            PreparedStatement stm = cm.getActiveConnection().prepareStatement(SELECT_BY_ID);
+            stm.setLong(1, id);
+            stm.execute();
+            ResultSet resultSet = stm.getResultSet();
+            if (resultSet.next()) {
+                return getAccount(resultSet);
+            } else {
+                return null;
+            }
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -91,7 +91,7 @@ public class AccountRepositoryImplTest {
     }
 
     private Account findAccountById(Long id) {
-        return cm.doWork(conn -> sut.findById(conn, id));
+        return cm.doWork2(() -> sut.findById(id));
     }
 
     private Account createAccount(Account account) {

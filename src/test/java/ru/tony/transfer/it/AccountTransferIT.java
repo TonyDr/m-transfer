@@ -6,8 +6,6 @@ import ru.tony.transfer.resource.messages.*;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 import java.math.BigDecimal;
-import java.util.StringJoiner;
-import java.util.stream.IntStream;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.Response.Status.OK;

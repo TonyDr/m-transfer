@@ -10,7 +10,7 @@ public interface AccountRepository {
 
     Account create(Account account);
 
-    Account findById(Connection connection, Long id) throws SQLException;
+    Account findById(Long id);
 
     List<Account> findAll(Connection conn) throws SQLException;
 

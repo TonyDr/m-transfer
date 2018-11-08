@@ -11,6 +11,7 @@ import org.mockito.stubbing.Answer;
 import ru.tony.transfer.db.ConnectionManager;
 import ru.tony.transfer.model.Account;
 import ru.tony.transfer.model.AccountTransaction;
+import ru.tony.transfer.model.AccountTransactionHistory;
 import ru.tony.transfer.repository.AccountRepository;
 import ru.tony.transfer.repository.AccountTransactionRepository;
 import ru.tony.transfer.resource.messages.*;
@@ -34,6 +35,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static ru.tony.transfer.resource.messages.TransactionType.DEPOSIT;
+import static ru.tony.transfer.resource.messages.TransactionType.WITHDRAWAL;
 
 public class AccountServiceImplTest {
 
@@ -83,7 +86,7 @@ public class AccountServiceImplTest {
     }
 
     @Test
-    public void shouldReturnAccountResponseWhenAccountFound() throws SQLException {
+    public void shouldReturnAccountResponseWhenAccountFound() {
         Long id = 123L;
         String number = "Test_number";
         Date createDate = new Date();
@@ -97,7 +100,7 @@ public class AccountServiceImplTest {
                 .balance(balance)
                 .build();
 
-        when(accRepo.findById(any(Connection.class), eq(id))).thenReturn(account);
+        when(accRepo.findById(eq(id))).thenReturn(account);
 
         AccountResponse resp = sut.findById(id);
         AccountItem item = resp.getAccount();
@@ -120,6 +123,33 @@ public class AccountServiceImplTest {
     public void shouldFailWhenAccountFromNotExist() {
         thrown.expect(AccountFromNotFoundException.class);
         sut.transfer(TransferRequest.builder().from("from").build());
+    }
+
+    @Test
+    public void shouldReturnListOfTransferHistoryItem() {
+        long accId = 123L;
+        when(accRepo.findById(accId)).thenReturn(Account.builder().id(accId).build());
+        when(transactionRepo.findHistoryById(accId)).thenReturn(Arrays.asList(
+                AccountTransactionHistory.builder().id(222L).from(accId).fromNumber("fromNumber")
+                        .to(444L).toNumber("toNumber").amount(BigDecimal.TEN).transactionTime(new Date()).build(),
+                AccountTransactionHistory.builder().id(333L).to(accId).fromNumber("fromNumber")
+                        .amount(BigDecimal.valueOf(63)).build()
+        ));
+        List<TransferHistoryItem> items = sut.findHistoryById(accId);
+        assertEquals(2, items.size());
+        TransferHistoryItem item = items.get(0);
+        assertEquals(222L, item.getTransactionId().longValue());
+        assertEquals(WITHDRAWAL, item.getType());
+        assertEquals(BigDecimal.TEN, item.getAmount());
+        assertEquals("toNumber", item.getToNumber());
+        assertNotNull(item.getTransactionTime());
+
+        TransferHistoryItem item2 = items.get(1);
+        assertEquals(333L, item2.getTransactionId().longValue());
+        assertEquals(DEPOSIT, item2.getType());
+        assertEquals(BigDecimal.valueOf(63), item2.getAmount());
+        assertEquals("fromNumber", item2.getFromNumber());
+
     }
 
     @Test
@@ -164,6 +194,12 @@ public class AccountServiceImplTest {
         Account accountTo = accountCaptor.getAllValues().get(1);
         assertEquals(idTo, accountTo.getId());
         assertEquals(BigDecimal.valueOf(6), accountTo.getBalance());
+    }
+
+    @Test
+    public void shouldFailWhenAccountNotFound() {
+        thrown.expect(AccountNotFoundException.class);
+        sut.findHistoryById(123L);
     }
 
     private Answer<AccountTransaction> getAccountTransactionAnswer(Long trId) {

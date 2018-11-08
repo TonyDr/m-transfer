@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import ru.tony.transfer.db.ConnectionManager;
 import ru.tony.transfer.model.Account;
 import ru.tony.transfer.model.AccountTransaction;
+import ru.tony.transfer.model.AccountTransactionHistory;
 import ru.tony.transfer.repository.AccountRepository;
 import ru.tony.transfer.repository.AccountTransactionRepository;
 import ru.tony.transfer.resource.messages.*;
@@ -19,6 +20,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
+import static ru.tony.transfer.resource.messages.TransactionType.DEPOSIT;
+import static ru.tony.transfer.resource.messages.TransactionType.WITHDRAWAL;
 
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
@@ -39,10 +42,8 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public AccountResponse findById(Long id) {
-        Account account = cm.doWork(conn -> accountRepository.findById(conn, id));
-        if (account == null) {
-            throw new AccountNotFoundException();
-        }
+        Account account = cm.doWork2(() -> accountRepository.findById(id));
+        checkAccount(account);
         return createAccountResponse(account);
     }
 
@@ -83,10 +84,38 @@ public class AccountServiceImpl implements AccountService {
         });
     }
 
-    private TransferItem toTransactionItem(AccountTransaction accountTransaction) {
+    @Override
+    public List<TransferHistoryItem> findHistoryById(Long id) {
+        return cm.doWork2(() -> {
+            Account account = accountRepository.findById(id);
+            checkAccount(account);
+            return transactionRepository.findHistoryById(id);
+        }).stream().map(val -> toHistoryItem(id,val)).collect(toList());
+    }
+
+    private TransferHistoryItem toHistoryItem(Long id, AccountTransactionHistory history) {
+        TransferHistoryItem.TransferHistoryItemBuilder builder = TransferHistoryItem.builder()
+                .transactionId(history.getId())
+                .amount(history.getAmount())
+                .transactionTime(history.getTransactionTime());
+        if(id.equals(history.getFrom())) {
+            builder.type(WITHDRAWAL).toNumber(history.getToNumber());
+        } else {
+            builder.type(DEPOSIT).fromNumber(history.getFromNumber());
+        }
+        return builder.build();
+    }
+
+    private void checkAccount(Account account) {
+        if (account == null) {
+            throw new AccountNotFoundException();
+        }
+    }
+
+    private TransferItem toTransactionItem(AccountTransaction transaction) {
         return TransferItem.builder()
-                .transactionId(accountTransaction.getId())
-                .transactionTime(accountTransaction.getTransactionTime())
+                .transactionId(transaction.getId())
+                .transactionTime(transaction.getTransactionTime())
                 .build();
     }
 

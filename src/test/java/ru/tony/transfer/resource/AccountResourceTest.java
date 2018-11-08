@@ -24,6 +24,9 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 import static ru.tony.transfer.resource.ResourcesNames.ACCOUNTS;
+import static ru.tony.transfer.resource.ResourcesNames.HISTORY;
+import static ru.tony.transfer.resource.ResourcesNames.TRANSFER;
+import static ru.tony.transfer.resource.messages.ResponseStatus.OK;
 
 public class AccountResourceTest extends JerseyTest {
 
@@ -73,7 +76,7 @@ public class AccountResourceTest extends JerseyTest {
                 .invoke().readEntity(AccountResponse.class);
 
         verify(service, times(1)).save(request);
-        assertEquals(ResponseStatus.OK, resp.getStatus());
+        assertEquals(OK, resp.getStatus());
     }
 
     @Test
@@ -106,7 +109,7 @@ public class AccountResourceTest extends JerseyTest {
         AccountListResponse resp = target(ACCOUNTS).request().buildGet().invoke()
                 .readEntity(AccountListResponse.class);
 
-        assertEquals(ResponseStatus.OK, resp.getStatus());
+        assertEquals(OK, resp.getStatus());
         assertEquals(2, resp.getAccounts().size());
     }
 
@@ -140,13 +143,25 @@ public class AccountResourceTest extends JerseyTest {
         TransferRequest request = fullFilledTransferRequest().build();
         when(service.transfer(eq(request))).thenReturn(TransferItem.builder().transactionId(id).build());
         TransferResponse resp = callTransfer(request).readEntity(TransferResponse.class);
-        assertEquals(ResponseStatus.OK, resp.getStatus());
+        assertEquals(OK, resp.getStatus());
         assertEquals(id, resp.getInfo().getTransactionId());
+    }
+
+    @Test
+    public void shouldCorrectlyCallHistoryMethod() {
+        Long id = 123L;
+        when(service.findHistoryById(eq(id)))
+                .thenReturn(Arrays.asList(new TransferHistoryItem(), new TransferHistoryItem()));
+        TransferHistoryResponse response = target(ACCOUNTS).path("123").path(HISTORY)
+                .request(APPLICATION_JSON_TYPE).buildGet()
+                .invoke().readEntity(TransferHistoryResponse.class);
+        assertEquals(OK, response.getStatus());
+        assertEquals(2, response.getItems().size());
     }
 
     private Response callTransfer(TransferRequest request) {
         Response response;
-        response = target(ACCOUNTS).path("transfer").request(APPLICATION_JSON_TYPE)
+        response = target(ACCOUNTS).path(TRANSFER).request(APPLICATION_JSON_TYPE)
                 .buildPost(Entity.entity(request, APPLICATION_JSON_TYPE)).invoke();
         return response;
     }

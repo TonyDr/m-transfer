@@ -9,8 +9,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static ru.tony.transfer.resource.ResourcesNames.ACCOUNTS;
-import static ru.tony.transfer.resource.ResourcesNames.TRANSFER;
+import static ru.tony.transfer.resource.ResourcesNames.*;
 
 @Path(ACCOUNTS)
 public class AccountResource {
@@ -30,6 +29,13 @@ public class AccountResource {
     @Produces(APPLICATION_JSON)
     public AccountResponse getAccount(@NotNull @PathParam("id") Long id) {
         return service.findById(id);
+    }
+
+    @GET
+    @Path("/{id}/" + HISTORY)
+    @Produces(APPLICATION_JSON)
+    public TransferHistoryResponse getHistory(@NotNull @PathParam("id") Long id) {
+        return new TransferHistoryResponse(service.findHistoryById(id));
     }
 
     @GET

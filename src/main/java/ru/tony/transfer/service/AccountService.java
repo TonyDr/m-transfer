@@ -13,4 +13,6 @@ public interface AccountService {
     List<AccountItem> findAll();
 
     TransferItem transfer(TransferRequest request);
+
+    List<TransferHistoryItem> findHistoryById(Long id);
 }
