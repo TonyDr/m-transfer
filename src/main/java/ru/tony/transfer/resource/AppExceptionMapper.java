@@ -2,7 +2,7 @@ package ru.tony.transfer.resource;
 
 import ru.tony.transfer.resource.messages.BaseResponse;
 import ru.tony.transfer.resource.messages.ResponseStatus;
-import ru.tony.transfer.service.exception.AppException;
+import ru.tony.transfer.exception.AppException;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;

@@ -20,7 +20,7 @@ public class AccountResource {
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    public AccountResponse saveAccount(@Valid AccountRequest request) {
+    public AccountResponse saveAccount(@Valid @NotNull AccountRequest request) {
         return service.save(request);
     }
 

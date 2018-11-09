@@ -1,5 +1,6 @@
 package ru.tony.transfer.resource.messages;
 
+import ru.tony.transfer.exception.AppException;
 import ru.tony.transfer.service.exception.*;
 
 public enum ResponseStatus {
@@ -26,6 +27,6 @@ public enum ResponseStatus {
                 return status;
             }
         }
-        return null;
+        return UNKNOWN_ERROR;
     }
 }
