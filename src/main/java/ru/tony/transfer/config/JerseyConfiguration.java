@@ -2,8 +2,9 @@ package ru.tony.transfer.config;
 
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
-import ru.tony.transfer.db.ConnectionManager;
+import ru.tony.transfer.db.DBWorkManager;
 import ru.tony.transfer.db.DbConnection;
+import ru.tony.transfer.db.DbConnectionManager;
 import ru.tony.transfer.repository.impl.AccountRepositoryImpl;
 import ru.tony.transfer.repository.impl.AccountTransactionRepositoryImpl;
 import ru.tony.transfer.service.AccountService;
@@ -25,8 +26,9 @@ public class JerseyConfiguration extends ResourceConfig {
     }
 
     private void initServices() {
-        ConnectionManager cm = new ConnectionManager(DbConnection.getDataSource());
+        DbConnectionManager cm = new DbConnectionManager(DbConnection.getDataSource());
+        DBWorkManager workManager = new DBWorkManager(cm);
         accountService = new AccountServiceImpl(new AccountRepositoryImpl(cm),
-                cm, new AccountTransactionRepositoryImpl(cm));
+                workManager, new AccountTransactionRepositoryImpl(cm));
     }
 }

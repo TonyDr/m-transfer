@@ -2,8 +2,6 @@ package ru.tony.transfer.repository;
 
 import ru.tony.transfer.model.Account;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 
 public interface AccountRepository {
@@ -12,7 +10,7 @@ public interface AccountRepository {
 
     Account findById(Long id);
 
-    List<Account> findAll(Connection conn) throws SQLException;
+    List<Account> findAll();
 
     Account findByNumberForUpdate(String from);
 

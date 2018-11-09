@@ -1,6 +1,7 @@
 package ru.tony.transfer.repository.impl;
 
-import ru.tony.transfer.db.ConnectionManager;
+import ru.tony.transfer.db.DataAccessException;
+import ru.tony.transfer.db.DbConnectionManager;
 import ru.tony.transfer.model.Account;
 import ru.tony.transfer.repository.AccountRepository;
 
@@ -15,9 +16,9 @@ public class AccountRepositoryImpl implements AccountRepository {
     private static final String SELECT_BY_ID = SELECT_SQL + " WHERE ID = ?";
     private static final String FOR_UPDATE = SELECT_SQL + " WHERE NUMBER = ? FOR UPDATE ";
     private static final String UPDATE_BALANCE = "UPDATE ACCOUNT SET BALANCE = ? WHERE NUMBER = ?";
-    private ConnectionManager cm;
+    private DbConnectionManager cm;
 
-    public AccountRepositoryImpl(ConnectionManager cm) {
+    public AccountRepositoryImpl(DbConnectionManager cm) {
         this.cm = cm;
     }
 
@@ -37,7 +38,7 @@ public class AccountRepositoryImpl implements AccountRepository {
             }
             return account;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException(e);
         }
     }
 
@@ -54,7 +55,7 @@ public class AccountRepositoryImpl implements AccountRepository {
                 return null;
             }
         }catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException(e);
         }
     }
 
@@ -68,14 +69,18 @@ public class AccountRepositoryImpl implements AccountRepository {
     }
 
     @Override
-    public List<Account> findAll(Connection conn) throws SQLException {
-        Statement stm = conn.createStatement();
-        ResultSet rs = stm.executeQuery(SELECT_SQL);
-        List<Account> list = new ArrayList<>();
-        while (rs.next()) {
-            list.add(getAccount(rs));
+    public List<Account> findAll() {
+        try {
+            Statement stm = cm.getActiveConnection().createStatement();
+            ResultSet rs = stm.executeQuery(SELECT_SQL);
+            List<Account> list = new ArrayList<>();
+            while (rs.next()) {
+                list.add(getAccount(rs));
+            }
+            return list;
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
         }
-        return list;
     }
 
     @Override
@@ -93,7 +98,7 @@ public class AccountRepositoryImpl implements AccountRepository {
                 return null;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException(e);
         }
     }
 
@@ -107,7 +112,7 @@ public class AccountRepositoryImpl implements AccountRepository {
             stm.setString(2, account.getNumber());
             return stm.executeUpdate() == 1;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException(e);
         }
     }
 }

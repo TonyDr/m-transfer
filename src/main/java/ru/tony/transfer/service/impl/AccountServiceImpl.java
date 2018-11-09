@@ -1,7 +1,7 @@
 package ru.tony.transfer.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import ru.tony.transfer.db.ConnectionManager;
+import ru.tony.transfer.db.DBWorkManager;
 import ru.tony.transfer.model.Account;
 import ru.tony.transfer.model.AccountTransaction;
 import ru.tony.transfer.model.AccountTransactionHistory;
@@ -26,7 +26,7 @@ import static ru.tony.transfer.resource.messages.TransactionType.WITHDRAWAL;
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
-    private final ConnectionManager cm;
+    private final DBWorkManager cm;
     private final AccountTransactionRepository transactionRepository;
 
     @Override
@@ -36,13 +36,13 @@ public class AccountServiceImpl implements AccountService {
                 .number(generateNumber())
                 .balance(request.getBalance())
                 .createDate(new Date()).build();
-        Account result = cm.doWork2(() -> accountRepository.create(account));
+        Account result = cm.doWork(() -> accountRepository.create(account));
         return createAccountResponse(result);
     }
 
     @Override
     public AccountResponse findById(Long id) {
-        Account account = cm.doWork2(() -> accountRepository.findById(id));
+        Account account = cm.doWork(() -> accountRepository.findById(id));
         checkAccount(account);
         return createAccountResponse(account);
     }
@@ -86,7 +86,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<TransferHistoryItem> findHistoryById(Long id) {
-        return cm.doWork2(() -> {
+        return cm.doWork(() -> {
             Account account = accountRepository.findById(id);
             checkAccount(account);
             return transactionRepository.findHistoryById(id);

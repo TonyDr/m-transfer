@@ -1,6 +1,7 @@
 package ru.tony.transfer.repository.impl;
 
-import ru.tony.transfer.db.ConnectionManager;
+import ru.tony.transfer.db.DataAccessException;
+import ru.tony.transfer.db.DbConnectionManager;
 import ru.tony.transfer.model.AccountTransaction;
 import ru.tony.transfer.model.AccountTransactionHistory;
 import ru.tony.transfer.repository.AccountTransactionRepository;
@@ -19,9 +20,9 @@ public class AccountTransactionRepositoryImpl implements AccountTransactionRepos
             " LEFT JOIN ACCOUNT acc1 ON act.from_acc = acc1.id " +
             " LEFT JOIN ACCOUNT acc2 ON act.to_acc = acc2.id " +
             " WHERE  act.from_acc =? or act.to_acc =? ORDER BY act.TRANSACTION_TIME DESC ";
-    private ConnectionManager connectionManager;
+    private DbConnectionManager connectionManager;
 
-    public AccountTransactionRepositoryImpl(ConnectionManager connectionManager) {
+    public AccountTransactionRepositoryImpl(DbConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
     }
 
@@ -41,7 +42,7 @@ public class AccountTransactionRepositoryImpl implements AccountTransactionRepos
             }
             return accountTransaction;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException(e);
         }
     }
 
@@ -60,7 +61,7 @@ public class AccountTransactionRepositoryImpl implements AccountTransactionRepos
             }
             return historyList;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException(e);
         }
     }
 

@@ -2,8 +2,9 @@ package ru.tony.transfer.repository.impl;
 
 import org.junit.Before;
 import org.junit.Test;
-import ru.tony.transfer.db.ConnectionManager;
+import ru.tony.transfer.db.DBWorkManager;
 import ru.tony.transfer.db.DbConnection;
+import ru.tony.transfer.db.DbConnectionManager;
 import ru.tony.transfer.model.Account;
 import ru.tony.transfer.model.AccountTransaction;
 import ru.tony.transfer.model.AccountTransactionHistory;
@@ -23,12 +24,13 @@ import static org.junit.Assert.assertNotNull;
 public class AccountTransactionRepositoryImplTest {
 
     private AccountTransactionRepository sut;
-    private ConnectionManager cm;
+    private DBWorkManager wm;
     private AccountRepository accRepo;
 
     @Before
     public void beforeTest() {
-        cm = new ConnectionManager(DbConnection.getDataSource());
+        DbConnectionManager cm = new DbConnectionManager(DbConnection.getDataSource());
+        wm = new DBWorkManager(cm);
         accRepo = new AccountRepositoryImpl(cm);
         sut = new AccountTransactionRepositoryImpl(cm);
     }
@@ -48,7 +50,7 @@ public class AccountTransactionRepositoryImplTest {
                 .transactionTime(new Date())
                 .amount(amount)
                 .build();
-        return cm.doWork2(() -> sut.create(build));
+        return wm.doWork(() -> sut.create(build));
     }
 
     @Test
@@ -61,7 +63,7 @@ public class AccountTransactionRepositoryImplTest {
         Long id = createAccountTransaction(acc2, acc1, BigDecimal.valueOf(111)).getId();
         createAccountTransaction(acc2, acc3, BigDecimal.valueOf(333));
 
-        List<AccountTransactionHistory> items = cm.doWork2(() ->sut.findHistoryById(acc1.getId()));
+        List<AccountTransactionHistory> items = wm.doWork(() ->sut.findHistoryById(acc1.getId()));
         assertEquals(3, items.size());
         AccountTransactionHistory item = items.get(0);
         assertEquals(id, item.getId());
@@ -74,7 +76,7 @@ public class AccountTransactionRepositoryImplTest {
     }
 
     private Account createAccount(String hTrTest1, BigDecimal ten) {
-        return cm.doWork2(() -> accRepo.create(Account.builder()
+        return wm.doWork(() -> accRepo.create(Account.builder()
                 .name(hTrTest1)
                 .number(getNumber())
                 .balance(ten)

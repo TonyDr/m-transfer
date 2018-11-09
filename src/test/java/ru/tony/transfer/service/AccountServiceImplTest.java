@@ -8,7 +8,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import ru.tony.transfer.db.ConnectionManager;
+import ru.tony.transfer.db.DBWorkManager;
+import ru.tony.transfer.db.DbConnectionManager;
 import ru.tony.transfer.model.Account;
 import ru.tony.transfer.model.AccountTransaction;
 import ru.tony.transfer.model.AccountTransactionHistory;
@@ -61,7 +62,8 @@ public class AccountServiceImplTest {
         DataSource dataSource = mock(DataSource.class);
         when(dataSource.getConnection()).thenReturn(mock(Connection.class));
         transactionRepo = mock(AccountTransactionRepository.class);
-        sut = new AccountServiceImpl(accRepo, new ConnectionManager(dataSource), transactionRepo);
+        DbConnectionManager dbConnectionManager = new DbConnectionManager(dataSource);
+        sut = new AccountServiceImpl(accRepo, new DBWorkManager(dbConnectionManager), transactionRepo);
     }
 
     @Test
@@ -112,8 +114,8 @@ public class AccountServiceImplTest {
     }
 
     @Test
-    public void getAllShouldReturnValuesList() throws SQLException {
-        when(accRepo.findAll(any(Connection.class))).thenReturn(Arrays.asList(Account.builder().build(), Account.builder().build()));
+    public void getAllShouldReturnValuesList() {
+        when(accRepo.findAll()).thenReturn(Arrays.asList(Account.builder().build(), Account.builder().build()));
         List<AccountItem> items = sut.findAll();
 
         assertEquals(2, items.size());
@@ -215,4 +217,6 @@ public class AccountServiceImplTest {
         account.setId(ACCOUNT_ID);
         return account;
     }
+
+
 }

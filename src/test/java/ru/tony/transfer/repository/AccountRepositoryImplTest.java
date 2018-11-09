@@ -3,8 +3,9 @@ package ru.tony.transfer.repository;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import ru.tony.transfer.db.ConnectionManager;
+import ru.tony.transfer.db.DBWorkManager;
 import ru.tony.transfer.db.DbConnection;
+import ru.tony.transfer.db.DbConnectionManager;
 import ru.tony.transfer.model.Account;
 import ru.tony.transfer.repository.impl.AccountRepositoryImpl;
 
@@ -13,19 +14,19 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class AccountRepositoryImplTest {
 
+    private static DbConnectionManager cm;
     private AccountRepository sut;
-    private static ConnectionManager cm;
+    private static DBWorkManager wm;
 
 
     @BeforeClass
     public static void beforeClass() {
-        cm = new ConnectionManager(DbConnection.getDataSource());
+        cm = new DbConnectionManager(DbConnection.getDataSource());
+        wm = new DBWorkManager(cm);
     }
 
     @Before
@@ -76,7 +77,7 @@ public class AccountRepositoryImplTest {
                 .balance(BigDecimal.TEN)
                 .build());
 
-        assertTrue(cm.doInTransaction(() -> {
+        assertTrue(wm.doInTransaction(() -> {
             Account toUpdate = sut.findByNumberForUpdate(account.getNumber());
             toUpdate.setBalance(BigDecimal.valueOf(111));
             return sut.updateBalance(toUpdate);
@@ -87,15 +88,15 @@ public class AccountRepositoryImplTest {
     }
 
     private List<Account> getAll() {
-        return cm.doWork(sut::findAll);
+        return wm.doWork(sut::findAll);
     }
 
     private Account findAccountById(Long id) {
-        return cm.doWork2(() -> sut.findById(id));
+        return wm.doWork(() -> sut.findById(id));
     }
 
     private Account createAccount(Account account) {
-        return cm.doWork2(() -> sut.create(account));
+        return wm.doWork(() -> sut.create(account));
     }
 
 
