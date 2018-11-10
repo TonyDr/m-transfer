@@ -111,6 +111,13 @@ public class AccountTransferIT extends AppBase{
     }
 
     @Test
+    public void transferShouldFailWhenTransferToSameAccount() {
+        AccountItem from = createAccount(getCreateAccountRequest("transfer_to_error", valueOf(100))).getAccount();
+        TransferRequest request = TransferRequest.builder().from(from.getNumber()).to(from.getNumber()).amount(valueOf(50)).build();
+        sendAndCheckResponse(SAME_ACCOUNT, request);
+    }
+
+    @Test
     public void transferShouldFailWhenNotEnoughFonds() {
         AccountItem from = createAccount(getCreateAccountRequest("transfer_fonds1", valueOf(15))).getAccount();
         AccountItem to = createAccount(getCreateAccountRequest("transfer_fonds2", BigDecimal.TEN)).getAccount();

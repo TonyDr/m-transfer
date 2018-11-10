@@ -16,10 +16,7 @@ import ru.tony.transfer.model.AccountTransactionHistory;
 import ru.tony.transfer.repository.AccountRepository;
 import ru.tony.transfer.repository.AccountTransactionRepository;
 import ru.tony.transfer.resource.messages.*;
-import ru.tony.transfer.service.exception.AccountFromNotFoundException;
-import ru.tony.transfer.service.exception.AccountNotFoundException;
-import ru.tony.transfer.service.exception.AccountToNotFoundException;
-import ru.tony.transfer.service.exception.InsufficientFundsException;
+import ru.tony.transfer.service.exception.*;
 import ru.tony.transfer.service.impl.AccountServiceImpl;
 
 import javax.sql.DataSource;
@@ -128,33 +125,6 @@ public class AccountServiceImplTest {
     }
 
     @Test
-    public void shouldReturnListOfTransferHistoryItem() {
-        long accId = 123L;
-        when(accRepo.findById(accId)).thenReturn(Account.builder().id(accId).build());
-        when(transactionRepo.findHistoryById(accId)).thenReturn(Arrays.asList(
-                AccountTransactionHistory.builder().id(222L).from(accId).fromNumber("fromNumber")
-                        .to(444L).toNumber("toNumber").amount(BigDecimal.TEN).transactionTime(new Date()).build(),
-                AccountTransactionHistory.builder().id(333L).to(accId).fromNumber("fromNumber")
-                        .amount(BigDecimal.valueOf(63)).build()
-        ));
-        List<TransferHistoryItem> items = sut.findHistoryById(accId);
-        assertEquals(2, items.size());
-        TransferHistoryItem item = items.get(0);
-        assertEquals(222L, item.getTransactionId().longValue());
-        assertEquals(WITHDRAWAL, item.getType());
-        assertEquals(BigDecimal.TEN, item.getAmount());
-        assertEquals("toNumber", item.getToNumber());
-        assertNotNull(item.getTransactionTime());
-
-        TransferHistoryItem item2 = items.get(1);
-        assertEquals(333L, item2.getTransactionId().longValue());
-        assertEquals(DEPOSIT, item2.getType());
-        assertEquals(BigDecimal.valueOf(63), item2.getAmount());
-        assertEquals("fromNumber", item2.getFromNumber());
-
-    }
-
-    @Test
     public void shouldFailWhenAccountToNotExist() {
         thrown.expect(AccountToNotFoundException.class);
         when(accRepo.findByNumberForUpdate(eq("from"))).thenReturn(new Account());
@@ -162,10 +132,20 @@ public class AccountServiceImplTest {
     }
 
     @Test
+    public void shouldFailWhenAccountFromSameAsTo() {
+        thrown.expect(SameAccountException.class);
+        Account account = Account.builder().id(123L).build();
+        when(accRepo.findByNumberForUpdate(eq("from"))).thenReturn(account);
+        when(accRepo.findByNumberForUpdate(eq("to"))).thenReturn(account);
+        sut.transfer(TransferRequest.builder().from("from").to("to").build());
+    }
+
+    @Test
     public void shouldFailWhenNotEnoughFunds() {
         thrown.expect(InsufficientFundsException.class);
-        when(accRepo.findByNumberForUpdate(eq("from"))).thenReturn(Account.builder().balance(BigDecimal.TEN).build());
-        when(accRepo.findByNumberForUpdate(eq("to"))).thenReturn(Account.builder().build());
+        when(accRepo.findByNumberForUpdate(eq("from"))).thenReturn(Account.builder().id(1L)
+                .balance(BigDecimal.TEN).build());
+        when(accRepo.findByNumberForUpdate(eq("to"))).thenReturn(Account.builder().id(2L).build());
         sut.transfer(TransferRequest.builder().from("from").to("to").amount(BigDecimal.valueOf(11)).build());
     }
 
@@ -202,6 +182,33 @@ public class AccountServiceImplTest {
     public void shouldFailWhenAccountNotFound() {
         thrown.expect(AccountNotFoundException.class);
         sut.findHistoryById(123L);
+    }
+
+    @Test
+    public void shouldReturnListOfTransferHistoryItem() {
+        long accId = 123L;
+        when(accRepo.findById(accId)).thenReturn(Account.builder().id(accId).build());
+        when(transactionRepo.findHistoryById(accId)).thenReturn(Arrays.asList(
+                AccountTransactionHistory.builder().id(222L).from(accId).fromNumber("fromNumber")
+                        .to(444L).toNumber("toNumber").amount(BigDecimal.TEN).transactionTime(new Date()).build(),
+                AccountTransactionHistory.builder().id(333L).to(accId).fromNumber("fromNumber")
+                        .amount(BigDecimal.valueOf(63)).build()
+        ));
+        List<TransferHistoryItem> items = sut.findHistoryById(accId);
+        assertEquals(2, items.size());
+        TransferHistoryItem item = items.get(0);
+        assertEquals(222L, item.getTransactionId().longValue());
+        assertEquals(WITHDRAWAL, item.getType());
+        assertEquals(BigDecimal.TEN, item.getAmount());
+        assertEquals("toNumber", item.getToNumber());
+        assertNotNull(item.getTransactionTime());
+
+        TransferHistoryItem item2 = items.get(1);
+        assertEquals(333L, item2.getTransactionId().longValue());
+        assertEquals(DEPOSIT, item2.getType());
+        assertEquals(BigDecimal.valueOf(63), item2.getAmount());
+        assertEquals("fromNumber", item2.getFromNumber());
+
     }
 
     private Answer<AccountTransaction> getAccountTransactionAnswer(Long trId) {

@@ -9,6 +9,7 @@ public enum ResponseStatus {
     ACCOUNT_NOT_FOUND(AccountNotFoundException.class),
     ACCOUNT_FROM_NOT_FOUND(AccountFromNotFoundException.class),
     ACCOUNT_TO_NOT_FOUND(AccountToNotFoundException.class),
+    SAME_ACCOUNT(SameAccountException.class),
     NOT_ENOUGH_FONDS(InsufficientFundsException.class),
     UNKNOWN_ERROR;
 
