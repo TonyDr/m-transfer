@@ -36,7 +36,11 @@
             <artifactId>jetty-util</artifactId>
             <version>9.4.11.v20180605</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <version>1.7.25</version>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-jetty-http</artifactId>

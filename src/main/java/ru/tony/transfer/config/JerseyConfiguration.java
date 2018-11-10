@@ -1,6 +1,8 @@
 package ru.tony.transfer.config;
 
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import ru.tony.transfer.db.DBWorkManager;
 import ru.tony.transfer.db.DbConnection;
@@ -23,6 +25,8 @@ public class JerseyConfiguration extends ResourceConfig {
                 bind(accountService).to(AccountService.class);
             }
         });
+        register(JacksonFeature.class);
+        register(LoggingFeature.class);
     }
 
     private void initServices() {
