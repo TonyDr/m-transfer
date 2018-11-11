@@ -22,7 +22,7 @@ public class AccountTransferIT extends AppBase{
     @Test
     public void shouldCreateAndGetAccount() {
         String name = "test1";
-        BigDecimal balance = valueOf(100);
+        BigDecimal balance = valueOf(100).setScale(4);
         AccountResponse result = createAccount(getCreateAccountRequest(name, balance));
         assertAccountResponse(name, balance, result);
 
@@ -71,12 +71,12 @@ public class AccountTransferIT extends AppBase{
         TransferHistoryItem item1 = response.getItems().get(0);
         assertEquals(transaction2, item1.getTransactionId());
         assertEquals(acc3.getNumber(), item1.getFromNumber());
-        assertEquals(valueOf(60), item1.getAmount());
+        assertEquals(valueOf(60).setScale(4), item1.getAmount());
 
         TransferHistoryItem item2 = response.getItems().get(1);
         assertEquals(transaction1, item2.getTransactionId());
         assertEquals(acc2.getNumber(), item2.getToNumber());
-        assertEquals(valueOf(50), item2.getAmount());
+        assertEquals(valueOf(50).setScale(4), item2.getAmount());
     }
 
     @Test

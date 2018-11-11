@@ -43,7 +43,7 @@ public class AccountRepositoryImplTest {
         Account account = Account.builder()
                 .name(testName)
                 .number(number)
-                .createDate(createDate)
+                .createTime(createDate)
                 .balance(balance)
                 .build();
 
@@ -55,7 +55,7 @@ public class AccountRepositoryImplTest {
         result = findAccountById(id);
         assertEquals(id, result.getId());
         assertEquals(number, result.getNumber());
-        assertEquals(createDate, result.getCreateDate());
+        assertEquals(createDate, result.getCreateTime());
         assertEquals(testName, result.getName());
         assertEquals(balance, result.getBalance());
     }
@@ -64,7 +64,7 @@ public class AccountRepositoryImplTest {
     public void shouldCorrectlyGetAllAccounts() {
         int size = getAll().size();
 
-        createAccount(Account.builder().name("insertNew").number("some_number").createDate(new Date())
+        createAccount(Account.builder().name("insertNew").number("some_number").createTime(new Date())
                 .balance(BigDecimal.TEN)
                 .build());
 
@@ -73,7 +73,7 @@ public class AccountRepositoryImplTest {
 
     @Test
     public void shouldCorrectlyUpdateBalanceForAccount() {
-        Account account = createAccount(Account.builder().name("insertNew").number(UUID.randomUUID().toString()).createDate(new Date())
+        Account account = createAccount(Account.builder().name("insertNew").number(UUID.randomUUID().toString()).createTime(new Date())
                 .balance(BigDecimal.TEN)
                 .build());
 

@@ -32,7 +32,7 @@ public class AccountServiceImpl implements AccountService {
                 .name(request.getName())
                 .number(generateNumber())
                 .balance(request.getBalance())
-                .createDate(new Date()).build();
+                .createTime(new Date()).build();
         Account result = cm.doWork(() -> accountRepository.create(account));
         return createAccountResponse(result);
     }
@@ -142,7 +142,7 @@ public class AccountServiceImpl implements AccountService {
         return AccountItem.builder()
                 .id(account.getId())
                 .number(account.getNumber())
-                .createDate(account.getCreateDate())
+                .createTime(account.getCreateTime())
                 .name(account.getName())
                 .balance(account.getBalance()).build();
     }

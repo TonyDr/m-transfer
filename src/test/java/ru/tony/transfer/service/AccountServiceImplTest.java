@@ -73,7 +73,7 @@ public class AccountServiceImplTest {
         AccountItem item = resp.getAccount();
         assertEquals(ACCOUNT_ID, item.getId());
         assertNotNull(item.getNumber());
-        assertNotNull(item.getCreateDate());
+        assertNotNull(item.getCreateTime());
         assertEquals(testName, item.getName());
         assertEquals(balance, item.getBalance());
     }
@@ -95,7 +95,7 @@ public class AccountServiceImplTest {
                 .id(id)
                 .name(testName)
                 .number(number)
-                .createDate(createDate)
+                .createTime(createDate)
                 .balance(balance)
                 .build();
 
@@ -105,7 +105,7 @@ public class AccountServiceImplTest {
         AccountItem item = resp.getAccount();
         assertEquals(id, item.getId());
         assertEquals(number, item.getNumber());
-        assertEquals(createDate, item.getCreateDate());
+        assertEquals(createDate, item.getCreateTime());
         assertEquals(testName, item.getName());
         assertEquals(balance, item.getBalance());
     }

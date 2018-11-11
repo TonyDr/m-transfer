@@ -17,5 +17,5 @@ public class Account {
     private String name;
     private String number;
     private BigDecimal balance;
-    private Date createDate;
+    private Date createTime;
 }

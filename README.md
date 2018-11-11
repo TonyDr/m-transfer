@@ -31,7 +31,7 @@ Creates account with given name and amount of money
     "account": {
         "id": ${id_of_account},
         "number": ${generated_number},
-        "createDate": ${creation_date},
+        "createTime": ${creation_date},
         "name": ${account_name},
         "balance": ${balance_of_account}
     }
@@ -98,7 +98,7 @@ Return list of all accounts
         {
             "id": ${account_id},
             "number": ${account_number},
-            "createDate": ${creation_date},
+            "createTime": ${creation_date},
             "name": ${account_name},
             "balance": ${current_account_balance}
         }
@@ -115,11 +115,11 @@ Return information about account with given id
 '''json
 {
     "status": "OK",
-    "item": [
+    "account": [
         {
             "id": ${account_id},
             "number": ${account_number},
-            "createDate": ${creation_date},
+            "createTime": ${creation_date},
             "name": ${account_name},
             "balance": ${current_account_balance}
         }

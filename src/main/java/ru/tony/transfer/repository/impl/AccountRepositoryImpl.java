@@ -7,12 +7,13 @@ import ru.tony.transfer.repository.AccountRepository;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class AccountRepositoryImpl implements AccountRepository {
 
-    private static final String INSERT_SQL = "INSERT INTO ACCOUNT (number, create_date, balance, ACC_NAME)  VALUES (?,?,?,?)";
-    private static final String SELECT_SQL = "SELECT ID, NUMBER, CREATE_DATE, BALANCE, ACC_NAME FROM ACCOUNT";
+    private static final String INSERT_SQL = "INSERT INTO ACCOUNT (number, create_TIME, balance, ACC_NAME)  VALUES (?,?,?,?)";
+    private static final String SELECT_SQL = "SELECT ID, NUMBER, CREATE_TIME, BALANCE, ACC_NAME FROM ACCOUNT";
     private static final String SELECT_BY_ID = SELECT_SQL + " WHERE ID = ?";
     private static final String FOR_UPDATE = SELECT_SQL + " WHERE NUMBER = ? FOR UPDATE ";
     private static final String UPDATE_BALANCE = "UPDATE ACCOUNT SET BALANCE = ? WHERE NUMBER = ?";
@@ -28,8 +29,8 @@ public class AccountRepositoryImpl implements AccountRepository {
         try {
             PreparedStatement stm = cm.getActiveConnection().prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS);
             stm.setString(1, account.getNumber());
-            stm.setTimestamp(2, new Timestamp(account.getCreateDate().getTime()));
-            stm.setBigDecimal(3, account.getBalance().setScale(2));
+            stm.setTimestamp(2, new Timestamp(account.getCreateTime().getTime()));
+            stm.setBigDecimal(3, account.getBalance().setScale(4));
             stm.setString(4, account.getName());
             stm.execute();
             ResultSet rs = stm.getGeneratedKeys();
@@ -59,13 +60,13 @@ public class AccountRepositoryImpl implements AccountRepository {
         }
     }
 
-    private Account getAccount(ResultSet resultSet) throws SQLException {
+    private Account getAccount(ResultSet rs) throws SQLException {
         return Account.builder()
-                .id(resultSet.getLong(1))
-                .number(resultSet.getString(2))
-                .createDate(new Date(resultSet.getTimestamp(3).getTime()))
-                .balance(resultSet.getBigDecimal(4))
-                .name(resultSet.getString(5)).build();
+                .id(rs.getLong(1))
+                .number(rs.getString(2))
+                .createTime(new Date(rs.getTimestamp(3).getTime()))
+                .balance(rs.getBigDecimal(4))
+                .name(rs.getString(5)).build();
     }
 
     @Override

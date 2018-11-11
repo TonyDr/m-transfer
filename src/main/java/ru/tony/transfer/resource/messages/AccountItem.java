@@ -14,7 +14,7 @@ public class AccountItem {
 
     private Long id;
     private String number;
-    private Date createDate;
+    private Date createTime;
     private String name;
     private BigDecimal balance;
 }

@@ -58,9 +58,9 @@ public class AccountTransactionRepositoryImplTest {
         Account acc1 = createAccount("hTrTest1", TEN);
         Account acc2 =  createAccount("hTrTest2", ONE);
         Account acc3 =  createAccount("hTrTest3", BigDecimal.valueOf(123));
+        BigDecimal amount = BigDecimal.valueOf(111.54).setScale(4);
         createAccountTransaction(acc1, acc2, TEN);
         createAccountTransaction(acc1, acc3, BigDecimal.valueOf(222));
-        BigDecimal amount = BigDecimal.valueOf(111.54).setScale(4);
         Long id = createAccountTransaction(acc2, acc1, amount).getId();
         createAccountTransaction(acc2, acc3, BigDecimal.valueOf(333));
 
@@ -81,7 +81,7 @@ public class AccountTransactionRepositoryImplTest {
                 .name(hTrTest1)
                 .number(getNumber())
                 .balance(ten)
-                .createDate(new Date()).build()));
+                .createTime(new Date()).build()));
     }
 
 

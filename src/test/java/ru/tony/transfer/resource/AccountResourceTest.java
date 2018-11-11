@@ -90,7 +90,7 @@ public class AccountResourceTest extends JerseyTest {
                 .name("test")
                 .balance(balance)
                 .number(testNum)
-                .createDate(createDate).build()).build();
+                .createTime(createDate).build()).build();
         when(service.findById(eq(accountId))).thenReturn(val);
         AccountResponse resp = target(ACCOUNTS).path("123").request()
                 .buildGet().invoke().readEntity(AccountResponse.class);
@@ -99,7 +99,7 @@ public class AccountResourceTest extends JerseyTest {
         assertEquals(accountId, item.getId());
         assertEquals("test", item.getName());
         assertEquals(balance, item.getBalance());
-        assertEquals(createDate, item.getCreateDate());
+        assertEquals(createDate, item.getCreateTime());
         assertEquals(testNum, item.getNumber());
     }
 
