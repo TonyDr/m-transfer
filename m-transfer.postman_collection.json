@@ -1,0 +1,111 @@
+{
+	"variables": [],
+	"info": {
+		"name": "m-transfer",
+		"_postman_id": "13c91f96-8855-de0b-284d-41dd2fe2c2f1",
+		"description": "Access to m-transfer rest-api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create account",
+			"request": {
+				"url": "http://localhost:9998/accounts",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\":\"test_account\",\n\t\"balance\": 150.45\n}"
+				},
+				"description": "Creating account"
+			},
+			"response": []
+		},
+		{
+			"name": "Transfer beetween accounts",
+			"request": {
+				"url": "http://localhost:9998/accounts/transfer",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"from\":\"01359e8f-0b6c-4007-8d8b-47ce1c1441b8\",\n\t\"to\": \"eba313ca-dca7-4d16-8480-c36f7f4279bd\",\n\t\"amount\": 50.60\n}"
+				},
+				"description": "Creating account"
+			},
+			"response": []
+		},
+		{
+			"name": "Accounts List",
+			"request": {
+				"url": "http://localhost:9998/accounts",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\":\"insert_name\",\n\t\"balance\": 100.20\n}"
+				},
+				"description": "Creating account"
+			},
+			"response": []
+		},
+		{
+			"name": "Get account by id",
+			"request": {
+				"url": "http://localhost:9998/accounts/1",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\":\"insert_name\",\n\t\"balance\": 100.20\n}"
+				},
+				"description": "Creating account"
+			},
+			"response": []
+		},
+		{
+			"name": "Get account history by id",
+			"request": {
+				"url": "http://localhost:9998/accounts/1/history",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\":\"insert_name\",\n\t\"balance\": 100.20\n}"
+				},
+				"description": "Creating account"
+			},
+			"response": []
+		}
+	]
+}
