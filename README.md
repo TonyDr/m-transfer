@@ -1,31 +1,31 @@
-###This is app for money transfer between accounts 
+### This is app for money transfer between accounts 
 
-####RestAPI of the app
+#### RestAPI of the app
 
 | URL                    |Method| Description   | 
-| ---------------------- |:-----|:-------------:| 
+| ---------------------- |:-----|:--------------| 
 | /accounts              |POST  | Create account and return information about created record | 
 | /accounts/{id}         |GET   | Return information about account with given id     | 
 | /accounts              |GET   | Return list of all existed accounts      | 
 | /accounts/transfer     |POST  | Transfer money between accounts      |
 | /accounts/{id}/history |GET   | Return information about transaction for given account id      |
 
-####Descriptions of the services request and response
+#### Descriptions of the services request and response
 
 ##### /accounts (POST)
 Creates account with given name and amount of money
 ###### Request
 
-'''json
-{
+```
+{ 
 	"name": ${account_name},
 	"balance": ${balance_of_account}
 }
-'''
+```
 
 ###### Response
 
-'''json
+```
 {
     "status": "OK",
     "account": {
@@ -36,23 +36,23 @@ Creates account with given name and amount of money
         "balance": ${balance_of_account}
     }
 }
-'''
+```
 
 ##### /accounts/transfer
 Transfer money between accounts
 ###### Request
 
-'''json
+```
 {
 	"from": ${number_of_account_from},
 	"to": ${number_of_account_to},
 	"amount": ${amount_of_money_to_transfer}
 }
-'''
+```
 
 ###### Response
 
-'''json
+```
 {
     "status": "OK",
     "info": {
@@ -60,7 +60,7 @@ Transfer money between accounts
         "transactionTime": ${transaction_time}
     }
 }
-'''
+```
 
 ##### /accounts/{id}/history
 Return list of transaction for given account id
@@ -69,7 +69,7 @@ id - is identifier of account
 
 ###### Response
 
-'''json
+```
 {
     "status": "OK",
     "items": [
@@ -83,7 +83,7 @@ id - is identifier of account
         }
     ]
 }
-'''
+```
 
 
 ##### /accounts (GET)
@@ -91,7 +91,7 @@ Return list of all accounts
 
 ###### Response
 
-'''json
+```
 {
     "status": "OK",
     "accounts": [
@@ -104,7 +104,7 @@ Return list of all accounts
         }
     ]
 }
-'''
+```
 
 ##### /accounts/{id} (GET)
 
@@ -112,7 +112,7 @@ Return information about account with given id
 
 ###### Response
 
-'''json
+```
 {
     "status": "OK",
     "account": [
@@ -125,4 +125,4 @@ Return information about account with given id
         }
     ]
 }
-'''
+```
