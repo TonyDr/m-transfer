@@ -1,16 +1,16 @@
-###This is app for money transfer between accounts 
+### This is app for money transfer between accounts 
 
-####RestAPI of the app
+#### RestAPI of the app
 
 | URL                    |Method| Description   | 
-| ---------------------- |:-----|:-------------:| 
+| ---------------------- |:-----|:--------------| 
 | /accounts              |POST  | Create account and return information about created record | 
 | /accounts/{id}         |GET   | Return information about account with given id     | 
 | /accounts              |GET   | Return list of all existed accounts      | 
 | /accounts/transfer     |POST  | Transfer money between accounts      |
 | /accounts/{id}/history |GET   | Return information about transaction for given account id      |
 
-####Descriptions of the services request and response
+#### Descriptions of the services request and response
 
 ##### /accounts (POST)
 Creates account with given name and amount of money
