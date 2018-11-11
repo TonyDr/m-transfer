@@ -7,11 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.lang.Thread.currentThread;
-import static java.util.Objects.requireNonNull;
 
 public class DbConnectionManager {
 
-    private static DbConnectionManager instance;
     private DataSource dataSource;
 
     private Map<Thread, Connection> threadToConnection;

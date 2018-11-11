@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static ru.tony.transfer.db.JdbcUtils.closeResultSet;
+import static ru.tony.transfer.db.JdbcUtils.closeStatement;
+
 public class AccountRepositoryImpl implements AccountRepository {
 
     private static final String INSERT_SQL = "INSERT INTO ACCOUNT (number, create_TIME, balance, ACC_NAME)  VALUES (?,?,?,?)";
@@ -26,37 +29,47 @@ public class AccountRepositoryImpl implements AccountRepository {
 
     @Override
     public Account create(Account account) {
+        ResultSet rs = null;
+        PreparedStatement stm = null;
         try {
-            PreparedStatement stm = cm.getActiveConnection().prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS);
+            stm = cm.getActiveConnection().prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS);
             stm.setString(1, account.getNumber());
             stm.setTimestamp(2, new Timestamp(account.getCreateTime().getTime()));
             stm.setBigDecimal(3, account.getBalance().setScale(4));
             stm.setString(4, account.getName());
             stm.execute();
-            ResultSet rs = stm.getGeneratedKeys();
+            rs = stm.getGeneratedKeys();
             if (rs.next()) {
                 account.setId(rs.getLong(1));
             }
             return account;
         } catch (SQLException e) {
             throw new DataAccessException(e);
+        } finally {
+            closeResultSet(rs);
+            closeStatement(stm);
         }
     }
 
     @Override
-    public Account findById(Long id)  {
+    public Account findById(Long id) {
+        ResultSet rs = null;
+        PreparedStatement stm = null;
         try {
-            PreparedStatement stm = cm.getActiveConnection().prepareStatement(SELECT_BY_ID);
+            stm = cm.getActiveConnection().prepareStatement(SELECT_BY_ID);
             stm.setLong(1, id);
             stm.execute();
-            ResultSet resultSet = stm.getResultSet();
-            if (resultSet.next()) {
-                return getAccount(resultSet);
+            rs = stm.getResultSet();
+            if (rs.next()) {
+                return getAccount(rs);
             } else {
                 return null;
             }
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataAccessException(e);
+        } finally {
+            closeResultSet(rs);
+            closeStatement(stm);
         }
     }
 
@@ -71,9 +84,11 @@ public class AccountRepositoryImpl implements AccountRepository {
 
     @Override
     public List<Account> findAll() {
+        ResultSet rs = null;
+        Statement stm = null;
         try {
-            Statement stm = cm.getActiveConnection().createStatement();
-            ResultSet rs = stm.executeQuery(SELECT_SQL);
+            stm = cm.getActiveConnection().createStatement();
+            rs = stm.executeQuery(SELECT_SQL);
             List<Account> list = new ArrayList<>();
             while (rs.next()) {
                 list.add(getAccount(rs));
@@ -81,37 +96,48 @@ public class AccountRepositoryImpl implements AccountRepository {
             return list;
         } catch (SQLException e) {
             throw new DataAccessException(e);
+        } finally {
+            closeResultSet(rs);
+            closeStatement(stm);
         }
     }
 
     @Override
     public Account findByNumberForUpdate(String number) {
+        ResultSet rs = null;
+        PreparedStatement stm = null;
         try {
             Connection conn = cm.getActiveConnection();
-            PreparedStatement stm = conn.prepareStatement(FOR_UPDATE);
+            stm = conn.prepareStatement(FOR_UPDATE);
             stm.setString(1, number);
             stm.execute();
-            ResultSet resultSet = stm.getResultSet();
-            if (resultSet.next()) {
-                return getAccount(resultSet);
+            rs = stm.getResultSet();
+            if (rs.next()) {
+                return getAccount(rs);
             } else {
                 return null;
             }
         } catch (SQLException e) {
             throw new DataAccessException(e);
+        } finally {
+            closeResultSet(rs);
+            closeStatement(stm);
         }
     }
 
     @Override
     public boolean updateBalance(Account account) {
+        PreparedStatement stm = null;
         try {
             Connection conn = cm.getActiveConnection();
-            PreparedStatement stm = conn.prepareStatement(UPDATE_BALANCE);
+            stm = conn.prepareStatement(UPDATE_BALANCE);
             stm.setBigDecimal(1, account.getBalance());
             stm.setString(2, account.getNumber());
             return stm.executeUpdate() == 1;
         } catch (SQLException e) {
             throw new DataAccessException(e);
+        } finally {
+            closeStatement(stm);
         }
     }
 }
