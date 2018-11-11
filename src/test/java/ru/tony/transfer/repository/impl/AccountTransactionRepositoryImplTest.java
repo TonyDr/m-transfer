@@ -60,14 +60,15 @@ public class AccountTransactionRepositoryImplTest {
         Account acc3 =  createAccount("hTrTest3", BigDecimal.valueOf(123));
         createAccountTransaction(acc1, acc2, TEN);
         createAccountTransaction(acc1, acc3, BigDecimal.valueOf(222));
-        Long id = createAccountTransaction(acc2, acc1, BigDecimal.valueOf(111)).getId();
+        BigDecimal amount = BigDecimal.valueOf(111.54).setScale(4);
+        Long id = createAccountTransaction(acc2, acc1, amount).getId();
         createAccountTransaction(acc2, acc3, BigDecimal.valueOf(333));
 
         List<AccountTransactionHistory> items = wm.doWork(() ->sut.findHistoryById(acc1.getId()));
         assertEquals(3, items.size());
         AccountTransactionHistory item = items.get(0);
         assertEquals(id, item.getId());
-        assertEquals(BigDecimal.valueOf(111), item.getAmount());
+        assertEquals(amount, item.getAmount());
         assertNotNull(item.getTransactionTime());
         assertEquals(acc2.getId(), item.getFrom());
         assertEquals(acc2.getNumber(),item.getFromNumber());

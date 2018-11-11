@@ -38,7 +38,7 @@ public class AccountRepositoryImplTest {
     public void createAccountShouldSucceed() {
         String number = "Test_number";
         Date createDate = new Date();
-        BigDecimal balance = BigDecimal.valueOf(100);
+        BigDecimal balance = BigDecimal.valueOf(100.25).setScale(4);
         String testName = "testName";
         Account account = Account.builder()
                 .name(testName)
@@ -77,14 +77,15 @@ public class AccountRepositoryImplTest {
                 .balance(BigDecimal.TEN)
                 .build());
 
+        BigDecimal newBalance = BigDecimal.valueOf(111.4).setScale(4);
         assertTrue(wm.doInTransaction(() -> {
             Account toUpdate = sut.findByNumberForUpdate(account.getNumber());
-            toUpdate.setBalance(BigDecimal.valueOf(111));
+            toUpdate.setBalance(newBalance);
             return sut.updateBalance(toUpdate);
 
         }));
         Account afterUpdate = findAccountById(account.getId());
-        assertEquals(BigDecimal.valueOf(111), afterUpdate.getBalance());
+        assertEquals(newBalance, afterUpdate.getBalance());
     }
 
     private List<Account> getAll() {

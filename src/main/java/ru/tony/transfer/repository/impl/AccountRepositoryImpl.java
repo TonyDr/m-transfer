@@ -29,7 +29,7 @@ public class AccountRepositoryImpl implements AccountRepository {
             PreparedStatement stm = cm.getActiveConnection().prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS);
             stm.setString(1, account.getNumber());
             stm.setTimestamp(2, new Timestamp(account.getCreateDate().getTime()));
-            stm.setBigDecimal(3, account.getBalance());
+            stm.setBigDecimal(3, account.getBalance().setScale(2));
             stm.setString(4, account.getName());
             stm.execute();
             ResultSet rs = stm.getGeneratedKeys();
@@ -87,7 +87,6 @@ public class AccountRepositoryImpl implements AccountRepository {
     public Account findByNumberForUpdate(String number) {
         try {
             Connection conn = cm.getActiveConnection();
-            System.out.println(conn);
             PreparedStatement stm = conn.prepareStatement(FOR_UPDATE);
             stm.setString(1, number);
             stm.execute();
@@ -106,7 +105,6 @@ public class AccountRepositoryImpl implements AccountRepository {
     public boolean updateBalance(Account account) {
         try {
             Connection conn = cm.getActiveConnection();
-            System.out.println(conn);
             PreparedStatement stm = conn.prepareStatement(UPDATE_BALANCE);
             stm.setBigDecimal(1, account.getBalance());
             stm.setString(2, account.getNumber());
