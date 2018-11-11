@@ -16,13 +16,16 @@
 Creates account with given name and amount of money
 ###### Request
 
-```json
-{ "name": ${account_name}, "balance": ${balance_of_account}}
+```
+{ 
+	"name": ${account_name},
+	"balance": ${balance_of_account}
+}
 ```
 
 ###### Response
 
-```json
+```
 {
     "status": "OK",
     "account": {
@@ -39,7 +42,7 @@ Creates account with given name and amount of money
 Transfer money between accounts
 ###### Request
 
-```json
+```
 {
 	"from": ${number_of_account_from},
 	"to": ${number_of_account_to},
@@ -49,7 +52,7 @@ Transfer money between accounts
 
 ###### Response
 
-```json
+```
 {
     "status": "OK",
     "info": {
@@ -66,7 +69,7 @@ id - is identifier of account
 
 ###### Response
 
-```json
+```
 {
     "status": "OK",
     "items": [
@@ -88,7 +91,7 @@ Return list of all accounts
 
 ###### Response
 
-```json
+```
 {
     "status": "OK",
     "accounts": [
@@ -109,7 +112,7 @@ Return information about account with given id
 
 ###### Response
 
-```json
+```
 {
     "status": "OK",
     "account": [
